@@ -1,0 +1,12 @@
+# packages
+node_modules/*
+
+# production files
+build/*
+
+# environment variables
+.env*
+!.env.example
+
+# log files
+*log*

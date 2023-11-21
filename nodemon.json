@@ -1,0 +1,18 @@
+{
+  "verbose": false,
+  "ignore": [
+    "node_modules",
+    "build",
+    "dist",
+    ".git",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
+  "watch": ["src"],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "execMap": {
+    "ts": "node -r ts-node/register -r tsconfig-paths/register"
+  }
+}
