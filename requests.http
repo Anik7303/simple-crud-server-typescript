@@ -32,7 +32,7 @@ Content-Type: {{json}}
 GET {{base}}/posts
 
 ### fetch one post
-@postId=1
+@postId=3
 GET {{base}}/posts/{{postId}}
 
 ### create a new post
@@ -44,3 +44,7 @@ Content-Type: {{json}}
   "title": "post 1",
   "content": "post content"
 }
+
+### delete a post
+DELETE {{base}}/posts/{{postId}}
+# Authorization: Bearer {{login.response.body.token}}

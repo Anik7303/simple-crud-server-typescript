@@ -1,6 +1,6 @@
 import { Post } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
-import { ParamsDictionary } from "express-serve-static-core";
+import type { ParamsDictionary } from "express-serve-static-core";
 
 import { getInstance } from "../lib/db";
 import { generateSlugFromTitle } from "../lib/utils";
@@ -94,6 +94,48 @@ export async function create(
       },
     });
     response.status(201).json(post);
+  } catch (error) {
+    next(error);
+  }
+}
+
+interface RemoveParams {
+  id: string;
+}
+
+export async function remove(
+  request: Request<RemoveParams>,
+  response: Response,
+  next: NextFunction
+) {
+  try {
+    const { id } = request.params;
+    const postId = parseInt(id);
+    if (isNaN(postId)) {
+      const error = new Error("invalid post id") as ErrorWithStatusCode;
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const post = await getInstance().post.findFirst({ where: { id: postId } });
+
+    if (!post) {
+      const error = new Error("post not found") as ErrorWithStatusCode;
+      error.statusCode = 404;
+      throw error;
+    }
+    if (post.authorId !== request.user.id) {
+      const error = new Error(
+        "you cannot delete this post."
+      ) as ErrorWithStatusCode;
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const deletedPost = await getInstance().post.delete({
+      where: { id: postId },
+    });
+    response.status(200).json(deletedPost);
   } catch (error) {
     next(error);
   }
