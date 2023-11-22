@@ -1,18 +1,22 @@
 import type { NextFunction, Request, Response } from "express";
+import ms from "ms";
 
-import { UserInfo } from "../interfaces/user";
 import { getInstance } from "../lib/db";
 import { generateHash, verifyHash } from "../lib/hash";
-import { formatUserData } from "../lib/utils";
+import { generateToken } from "../lib/token";
 
 interface LoginRequestData {
   email: string;
   password: string;
 }
 
+interface ResponseData {
+  token: string;
+}
+
 export async function requestLogin(
   request: Request<null, null, LoginRequestData>,
-  response: Response<UserInfo>,
+  response: Response<ResponseData>,
   next: NextFunction
 ) {
   try {
@@ -32,7 +36,12 @@ export async function requestLogin(
       error.statusCode = 422;
       throw error;
     }
-    response.status(200).json(formatUserData(user));
+
+    const token = generateToken({ id: user.id });
+    response
+      .status(200)
+      .cookie("token", token, { maxAge: ms("2d") })
+      .json({ token });
   } catch (error) {
     next(error);
   }
@@ -46,7 +55,7 @@ interface SignupRequestData {
 
 export async function requestSignup(
   request: Request<null, null, SignupRequestData>,
-  response: Response<UserInfo>,
+  response: Response<ResponseData>,
   next: NextFunction
 ) {
   try {
@@ -70,7 +79,11 @@ export async function requestSignup(
         password: hash,
       },
     });
-    response.status(201).json(formatUserData(user));
+    const token = generateToken({ id: user.id });
+    response
+      .status(201)
+      .cookie("token", token, { maxAge: ms("2d") })
+      .json({ token });
   } catch (error) {
     next(error);
   }

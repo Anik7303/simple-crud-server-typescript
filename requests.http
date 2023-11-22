@@ -7,6 +7,7 @@
 GET {{base}}
 
 ### send login request
+# @name login
 POST {{base}}/login
 Content-Type: {{json}}
 
@@ -15,7 +16,9 @@ Content-Type: {{json}}
   "password": "password123"
 }
 
+
 ### send signup request
+# @name signup
 POST {{base}}/register
 Content-Type: {{json}}
 
