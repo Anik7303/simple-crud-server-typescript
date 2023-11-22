@@ -27,3 +27,10 @@ Content-Type: {{json}}
   "email": "anik@test.com",
   "password": "password123"
 }
+
+### fetch all posts
+GET {{base}}/posts
+
+### fetch one post
+@postId=1
+GET {{base}}/posts/{{postId}}

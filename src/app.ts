@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { catchAllError, notFound } from "./middlewares/errors";
 import authRoutes from "./routes/auth";
+import postsRoutes from "./routes/posts";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use((req, _res, next) => {
   next();
 });
 app.use(authRoutes);
+app.use("/posts", postsRoutes);
 
 // error middlewares
 app.use(notFound);
