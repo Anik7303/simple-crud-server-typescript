@@ -99,6 +99,54 @@ export async function create(
   }
 }
 
+interface UpdateRequestParams {
+  id: string;
+}
+
+interface UpdateRequestBody {
+  title?: string;
+  content?: string;
+  published?: boolean;
+}
+
+export async function update(
+  request: Request<UpdateRequestParams, null, UpdateRequestBody>,
+  response: Response<Post>,
+  next: NextFunction
+) {
+  try {
+    const { id } = request.params;
+    const postId = parseInt(id);
+    if (isNaN(postId)) {
+      const error = new Error("invalid post id") as ErrorWithStatusCode;
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const post = await getInstance().post.findFirst({ where: { id: postId } });
+
+    if (!post) {
+      const error = new Error("post not found") as ErrorWithStatusCode;
+      error.statusCode = 404;
+      throw error;
+    }
+    const { content, published, title } = request.body;
+
+    const data: Partial<Post> = {};
+    if (title) data.title = title;
+    if (content) data.content = content;
+    if (published) data.published = published;
+
+    const updatedPost = await getInstance().post.update({
+      data,
+      where: { id: postId },
+    });
+    response.status(200).json(updatedPost);
+  } catch (error) {
+    next(error);
+  }
+}
+
 interface RemoveParams {
   id: string;
 }
