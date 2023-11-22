@@ -1,0 +1,26 @@
+@host=127.0.0.1
+@port={{$dotenv PORT}}
+@base=http://{{host}}:{{port}}
+@json=application/json
+
+### test baseurl
+GET {{base}}
+
+### send login request
+POST {{base}}/login
+Content-Type: {{json}}
+
+{
+  "email": "anik@test.com",
+  "password": "password123"
+}
+
+### send signup request
+POST {{base}}/register
+Content-Type: {{json}}
+
+{
+  "name": "Anik Mohammad",
+  "email": "anik@test.com",
+  "password": "password123"
+}

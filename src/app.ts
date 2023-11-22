@@ -3,6 +3,7 @@ import express from "express";
 import path from "node:path";
 
 import { catchAllError, notFound } from "./middlewares/errors";
+import authRoutes from "./routes/auth";
 
 const app = express();
 
@@ -12,6 +13,9 @@ app.use(cors());
 app.use(express.json());
 // add public directory
 app.use(express.static(path.resolve("public")));
+
+// routes
+app.use(authRoutes);
 
 // error middlewares
 app.use(notFound);
