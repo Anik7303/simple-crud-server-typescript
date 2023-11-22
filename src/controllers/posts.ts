@@ -3,7 +3,11 @@ import type { NextFunction, Request, Response } from "express";
 import type { ParamsDictionary } from "express-serve-static-core";
 
 import { getInstance } from "../lib/db";
-import { generateSlugFromTitle } from "../lib/utils";
+import {
+  generateSlugFromTitle,
+  throwIfNaN,
+  throwIfNotFound,
+} from "../lib/utils";
 
 interface FetchAllQueries {
   limit?: number;
@@ -47,15 +51,10 @@ export async function fetchOne(
 ) {
   try {
     const { id } = request.params;
-    const userId = parseInt(id, 10);
-    if (isNaN(userId)) {
-      const error = new Error("invalid post id") as ErrorWithStatusCode;
-      error.statusCode = 422;
-      throw error;
-    }
+    throwIfNaN(id, "invalid post id");
 
     const post = await getInstance().post.findFirst({
-      where: { id: userId },
+      where: { id: parseInt(id) },
       include: {
         author: {
           select: {
@@ -116,22 +115,16 @@ export async function update(
 ) {
   try {
     const { id } = request.params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      const error = new Error("invalid post id") as ErrorWithStatusCode;
-      error.statusCode = 422;
-      throw error;
-    }
+    throwIfNaN(id, "invalid post id");
 
-    const post = await getInstance().post.findFirst({ where: { id: postId } });
+    const post = await getInstance().post.findFirst({
+      where: { id: parseInt(id) },
+    });
 
-    if (!post) {
-      const error = new Error("post not found") as ErrorWithStatusCode;
-      error.statusCode = 404;
-      throw error;
-    }
+    throwIfNotFound<Post>(post, "post not found");
+    throwIfNotSameAuthor(request.user.id, post!.authorId);
+
     const { content, published, title } = request.body;
-
     const data: Partial<Post> = {};
     if (title) data.title = title;
     if (content) data.content = content;
@@ -139,7 +132,7 @@ export async function update(
 
     const updatedPost = await getInstance().post.update({
       data,
-      where: { id: postId },
+      where: { id: post!.id },
     });
     response.status(200).json(updatedPost);
   } catch (error) {
@@ -158,33 +151,29 @@ export async function remove(
 ) {
   try {
     const { id } = request.params;
-    const postId = parseInt(id);
-    if (isNaN(postId)) {
-      const error = new Error("invalid post id") as ErrorWithStatusCode;
-      error.statusCode = 422;
-      throw error;
-    }
+    throwIfNaN(id, "invalid post id");
 
-    const post = await getInstance().post.findFirst({ where: { id: postId } });
-
-    if (!post) {
-      const error = new Error("post not found") as ErrorWithStatusCode;
-      error.statusCode = 404;
-      throw error;
-    }
-    if (post.authorId !== request.user.id) {
-      const error = new Error(
-        "you cannot delete this post."
-      ) as ErrorWithStatusCode;
-      error.statusCode = 422;
-      throw error;
-    }
+    const post = await getInstance().post.findFirst({
+      where: { id: parseInt(id) },
+    });
+    throwIfNotFound<Post>(post, "post not found");
+    throwIfNotSameAuthor(request.user.id, post!.authorId);
 
     const deletedPost = await getInstance().post.delete({
-      where: { id: postId },
+      where: { id: post!.id },
     });
     response.status(200).json(deletedPost);
   } catch (error) {
     next(error);
+  }
+}
+
+function throwIfNotSameAuthor(requested: number, expected: number) {
+  if (requested !== expected) {
+    const error = new Error(
+      "You are not authorized to perform this action."
+    ) as ErrorWithStatusCode;
+    error.statusCode = 422;
+    throw error;
   }
 }

@@ -51,7 +51,7 @@ Content-Type: {{json}}
 # Authorization: Bearer {{login.response.body.token}}
 
 {
-  //"title": "updated post title",
+  "title": "updated post title!"
   //"content": "post content updated again",
   //"published": false
 }

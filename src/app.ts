@@ -20,15 +20,6 @@ app.use(express.json());
 app.use(express.static(path.resolve("public")));
 
 // routes
-app.use((req, _res, next) => {
-  console.log({
-    url: req.url,
-    body: req.body,
-    cookies: req.cookies,
-    params: req.params,
-  });
-  next();
-});
 app.use(authRoutes);
 app.use("/posts", postsRoutes);
 
