@@ -34,3 +34,13 @@ GET {{base}}/posts
 ### fetch one post
 @postId=1
 GET {{base}}/posts/{{postId}}
+
+### create a new post
+POST {{base}}/posts
+Content-Type: {{json}}
+# Authorization: Bearer {{login.response.body.token}}
+
+{
+  "title": "post 1",
+  "content": "post content"
+}

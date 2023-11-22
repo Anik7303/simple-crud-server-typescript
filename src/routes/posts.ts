@@ -1,10 +1,11 @@
 import { Router } from "express";
 
-import { fetchAll, fetchOne } from "../controllers/posts";
+import { create, fetchAll, fetchOne } from "../controllers/posts";
+import { requireAuth } from "../middlewares/auth";
 
 const router = Router();
 
-router.route("/").get(fetchAll);
+router.route("/").get(fetchAll).post(requireAuth, create);
 
 router.route("/:id").get(fetchOne);
 

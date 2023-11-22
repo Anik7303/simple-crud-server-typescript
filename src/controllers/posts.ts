@@ -1,7 +1,9 @@
 import { Post } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
 
 import { getInstance } from "../lib/db";
+import { generateSlugFromTitle } from "../lib/utils";
 
 interface FetchAllQueries {
   limit?: number;
@@ -16,7 +18,7 @@ interface FetchAllResponse {
 }
 
 export async function fetchAll(
-  request: Request<null, null, null, FetchAllQueries>,
+  request: Request<ParamsDictionary, null, null, FetchAllQueries>,
   response: Response<FetchAllResponse>,
   next: NextFunction
 ) {
@@ -54,8 +56,44 @@ export async function fetchOne(
 
     const post = await getInstance().post.findFirst({
       where: { id: userId },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
     response.status(200).json(post);
+  } catch (error) {
+    next(error);
+  }
+}
+
+interface CreateRequestBody {
+  title: string;
+  content?: string;
+}
+
+export async function create(
+  request: Request<ParamsDictionary, null, CreateRequestBody>,
+  response: Response<Post>,
+  next: NextFunction
+) {
+  try {
+    const { title, content } = request.body;
+    const slug = generateSlugFromTitle(title);
+    const post = await getInstance().post.create({
+      data: {
+        title,
+        content,
+        slug,
+        authorId: request.user.id,
+      },
+    });
+    response.status(201).json(post);
   } catch (error) {
     next(error);
   }
