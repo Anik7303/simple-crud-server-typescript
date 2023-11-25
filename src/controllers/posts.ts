@@ -3,11 +3,8 @@ import type { NextFunction, Request, Response } from "express";
 import type { ParamsDictionary } from "express-serve-static-core";
 
 import { getInstance } from "../lib/db";
-import {
-  generateSlugFromTitle,
-  throwIfNaN,
-  throwIfNotFound,
-} from "../lib/utils";
+import { customizeError, notFoundError } from "../lib/errors";
+import { generateSlugFromTitle, throwIfNaN } from "../lib/utils";
 
 interface FetchAllQueries {
   limit?: number;
@@ -121,8 +118,8 @@ export async function update(
       where: { id: parseInt(id) },
     });
 
-    throwIfNotFound<Post>(post, "post not found");
-    throwIfNotSameAuthor(request.user.id, post!.authorId);
+    if (!post) throw notFoundError("post not found.");
+    throwIfNotSameAuthor(request.user.id, post.authorId);
 
     const { content, published, title } = request.body;
     const data: Partial<Post> = {};
@@ -132,7 +129,7 @@ export async function update(
 
     const updatedPost = await getInstance().post.update({
       data,
-      where: { id: post!.id },
+      where: { id: post.id },
     });
     response.status(200).json(updatedPost);
   } catch (error) {
@@ -156,7 +153,7 @@ export async function remove(
     const post = await getInstance().post.findFirst({
       where: { id: parseInt(id) },
     });
-    throwIfNotFound<Post>(post, "post not found");
+    if (!post) throw notFoundError("Post not found.");
     throwIfNotSameAuthor(request.user.id, post!.authorId);
 
     const deletedPost = await getInstance().post.delete({
@@ -170,10 +167,6 @@ export async function remove(
 
 function throwIfNotSameAuthor(requested: number, expected: number) {
   if (requested !== expected) {
-    const error = new Error(
-      "You are not authorized to perform this action."
-    ) as ErrorWithStatusCode;
-    error.statusCode = 422;
-    throw error;
+    throw customizeError("You are not authorized to perform this action.", 422);
   }
 }

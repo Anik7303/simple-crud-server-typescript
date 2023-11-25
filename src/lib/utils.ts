@@ -1,6 +1,7 @@
 import type { User } from "@prisma/client";
 
 import type { UserInfo } from "../interfaces/user";
+import { customizeError } from "./errors";
 
 export function formatUserData(data: User): UserInfo {
   const { password, ...rest } = data;
@@ -20,19 +21,6 @@ export function throwIfNaN(
 ): void {
   const result = parseInt(value);
   if (isNaN(result)) {
-    const error = new Error(message) as ErrorWithStatusCode;
-    error.statusCode = statusCode;
-    throw error;
-  }
-}
-
-export function throwIfNotFound<T>(
-  value: T | null | undefined,
-  message: string
-) {
-  if (!value) {
-    const error = new Error(message) as ErrorWithStatusCode;
-    error.statusCode = 404;
-    throw error;
+    throw customizeError(message, statusCode);
   }
 }

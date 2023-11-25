@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import type { JwtPayload } from "jsonwebtoken";
 
+import { customizeError } from "../lib/errors";
 import { verifyToken } from "../lib/token";
 
 declare global {
@@ -32,9 +33,7 @@ export async function requireAuth(
     }
 
     if (!payload) {
-      const error = new Error("Authorization failed!") as ErrorWithStatusCode;
-      error.statusCode = 401;
-      throw error;
+      throw customizeError("Authorization failed!", 401);
     }
 
     if (typeof payload !== "string") {

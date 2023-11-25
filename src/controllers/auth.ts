@@ -1,9 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import ms from "ms";
 
-import { getInstance } from "../lib/db";
+import { validationError } from "../lib/errors";
 import { generateHash, verifyHash } from "../lib/hash";
 import { generateToken } from "../lib/token";
+import * as userService from "../services/user";
 
 interface LoginRequestData {
   email: string;
@@ -21,21 +22,12 @@ export async function requestLogin(
 ) {
   try {
     const { email, password } = request.body;
-    const user = await getInstance().user.findFirst({ where: { email } });
-    if (!user) {
-      const error = new Error(
-        `${email} is not associated with an account.`
-      ) as ErrorWithStatusCode;
-      error.statusCode = 422;
-      throw error;
-    }
+    const user = await userService.find({ email });
+    if (!user)
+      throw validationError(`${email} is not associated with an account.`);
 
     const match = await verifyHash(password, user.password);
-    if (!match) {
-      const error = new Error(`Wrong password`) as ErrorWithStatusCode;
-      error.statusCode = 422;
-      throw error;
-    }
+    if (!match) throw validationError("Wrong password");
 
     const token = generateToken({ id: user.id });
     response
@@ -60,25 +52,13 @@ export async function requestSignup(
 ) {
   try {
     const { name, email, password } = request.body;
-    const existingUser = await getInstance().user.findFirst({
-      where: { email },
-    });
+    const existingUser = await userService.find({ email });
     if (existingUser) {
-      const error = new Error(
-        `${email} is already in use.`
-      ) as ErrorWithStatusCode;
-      error.statusCode = 422;
-      throw error;
+      throw validationError(`${email} is already in use.`);
     }
 
     const hash = await generateHash(password);
-    const user = await getInstance().user.create({
-      data: {
-        name,
-        email,
-        password: hash,
-      },
-    });
+    const user = await userService.create({ name, email, password: hash });
     const token = generateToken({ id: user.id });
     response
       .status(201)

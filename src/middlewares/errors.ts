@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
+import { ErrorWithStatusCode } from "../interfaces/errors";
+
 export function notFound(
   request: Request,
   response: Response,
@@ -13,12 +15,6 @@ export function notFound(
     method,
     url,
   });
-}
-
-declare global {
-  interface ErrorWithStatusCode extends Error {
-    statusCode?: number;
-  }
 }
 
 export function catchAllError(
