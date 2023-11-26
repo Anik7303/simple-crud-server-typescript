@@ -1,14 +1,20 @@
-import type { User } from "@prisma/client";
+import type { Role, User } from "@prisma/client";
 
-import type { CreateUserData } from "../interfaces/user";
 import { getInstance } from "../lib/db";
 
-interface FindProps {
+interface FindUserDto {
   id?: number;
   email?: string;
 }
 
-export const find = async ({ id, email }: FindProps): Promise<User | null> =>
+interface CreateUserData {
+  name?: string;
+  email: string;
+  password: string;
+  role?: Role;
+}
+
+export const find = async ({ id, email }: FindUserDto): Promise<User | null> =>
   getInstance().user.findFirst({ where: { id, email } });
 
 export const create = async (data: CreateUserData): Promise<User> =>
