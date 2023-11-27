@@ -1,12 +1,42 @@
-export interface FindPostDto {
-  id: number;
+import { Post, Prisma } from "@prisma/client";
+
+export type PostOrderBy =
+  | Prisma.PostOrderByWithRelationInput
+  | Prisma.PostOrderByWithRelationInput[];
+
+export interface FetchAllRequestQuery {
+  limit?: number;
+  skip?: number;
 }
 
-export interface FindPostsDto {
-  id?: number;
+export interface FetchAllResponse {
+  total: number;
+  data: Post[];
+  next?: string;
+  previous?: string;
+}
+
+export interface FetchOneRequestParams {
+  id: string;
+}
+
+export interface CreateRequestBody {
+  title: string;
+  content?: string;
+}
+
+export interface UpdateRequestParams {
+  id: string;
+}
+
+export interface UpdateRequestBody {
   title?: string;
+  content?: string;
   published?: boolean;
-  createdAt?: Date;
+}
+
+export interface RemoveRequestParams {
+  id: string;
 }
 
 export interface CreatePostDto {
@@ -17,17 +47,8 @@ export interface CreatePostDto {
   authorId: number;
 }
 
-export interface UpdatePostDto {
-  id: number;
-}
-
 export interface UpdatablePostInfo {
-  title: string;
+  title?: string;
   content?: string;
   published?: boolean;
-}
-
-export interface RemovePostDto {
-  id: number;
-  slug?: string;
 }

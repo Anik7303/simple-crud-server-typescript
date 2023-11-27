@@ -24,7 +24,7 @@ Content-Type: {{json}}
 
 {
   "name": "Anik Mohammad",
-  "email": "anik@test.com",
+  "email": "anik3@test.com",
   "password": "password123"
 }
 
@@ -32,7 +32,7 @@ Content-Type: {{json}}
 GET {{base}}/posts
 
 ### fetch one post
-@postId=2
+@postId=5
 GET {{base}}/posts/{{postId}}
 
 ### create a new post
@@ -41,7 +41,7 @@ Content-Type: {{json}}
 # Authorization: Bearer {{login.response.body.token}}
 
 {
-  "title": "post 1",
+  "title": "post 5",
   "content": "post content"
 }
 

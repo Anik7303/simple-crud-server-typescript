@@ -2,47 +2,37 @@ import { Post } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
 import type { ParamsDictionary } from "express-serve-static-core";
 
-import { getInstance } from "../lib/db";
+import {
+  CreateRequestBody,
+  FetchAllRequestQuery,
+  FetchAllResponse,
+  FetchOneRequestParams,
+  RemoveRequestParams,
+  UpdatablePostInfo,
+  UpdateRequestBody,
+  UpdateRequestParams,
+} from "../interfaces/post";
 import { customizeError, notFoundError } from "../lib/errors";
 import { generateSlugFromTitle, throwIfNaN } from "../lib/utils";
-
-interface FetchAllQueries {
-  limit?: number;
-  skip?: number;
-}
-
-interface FetchAllResponse {
-  total: number;
-  data: Post[];
-  next?: string;
-  previous?: string;
-}
+import * as postService from "../services/post";
 
 export async function fetchAll(
-  request: Request<ParamsDictionary, null, null, FetchAllQueries>,
+  request: Request<ParamsDictionary, null, null, FetchAllRequestQuery>,
   response: Response<FetchAllResponse>,
   next: NextFunction
 ) {
   try {
     const { limit, skip } = request.query;
-    const totalPosts = await getInstance().post.count();
-    const posts = await getInstance().post.findMany({
-      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-      skip,
-      take: limit,
-    });
+    const totalPosts = await postService.count();
+    const posts = await postService.find({}, limit, skip);
     response.status(200).json({ total: totalPosts, data: posts });
   } catch (error) {
     next(error);
   }
 }
 
-interface FetchOneParams {
-  id: string;
-}
-
 export async function fetchOne(
-  request: Request<FetchOneParams>,
+  request: Request<FetchOneRequestParams>,
   response: Response<Post | null>,
   next: NextFunction
 ) {
@@ -50,27 +40,11 @@ export async function fetchOne(
     const { id } = request.params;
     throwIfNaN(id, "invalid post id");
 
-    const post = await getInstance().post.findFirst({
-      where: { id: parseInt(id) },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+    const post = await postService.findOne(parseInt(id));
     response.status(200).json(post);
   } catch (error) {
     next(error);
   }
-}
-
-interface CreateRequestBody {
-  title: string;
-  content?: string;
 }
 
 export async function create(
@@ -81,28 +55,16 @@ export async function create(
   try {
     const { title, content } = request.body;
     const slug = generateSlugFromTitle(title);
-    const post = await getInstance().post.create({
-      data: {
-        title,
-        content,
-        slug,
-        authorId: request.user.id,
-      },
+    const post = await postService.create({
+      title,
+      content,
+      slug,
+      authorId: request.user.id,
     });
     response.status(201).json(post);
   } catch (error) {
     next(error);
   }
-}
-
-interface UpdateRequestParams {
-  id: string;
-}
-
-interface UpdateRequestBody {
-  title?: string;
-  content?: string;
-  published?: boolean;
 }
 
 export async function update(
@@ -114,35 +76,25 @@ export async function update(
     const { id } = request.params;
     throwIfNaN(id, "invalid post id");
 
-    const post = await getInstance().post.findFirst({
-      where: { id: parseInt(id) },
-    });
-
+    const post = await postService.findOne(parseInt(id));
     if (!post) throw notFoundError("post not found.");
     throwIfNotSameAuthor(request.user.id, post.authorId);
 
     const { content, published, title } = request.body;
-    const data: Partial<Post> = {};
+    const data: UpdatablePostInfo = {};
     if (title) data.title = title;
     if (content) data.content = content;
     if (published) data.published = published;
 
-    const updatedPost = await getInstance().post.update({
-      data,
-      where: { id: post.id },
-    });
+    const updatedPost = await postService.update(post.id, data);
     response.status(200).json(updatedPost);
   } catch (error) {
     next(error);
   }
 }
 
-interface RemoveParams {
-  id: string;
-}
-
 export async function remove(
-  request: Request<RemoveParams>,
+  request: Request<RemoveRequestParams>,
   response: Response,
   next: NextFunction
 ) {
@@ -150,15 +102,11 @@ export async function remove(
     const { id } = request.params;
     throwIfNaN(id, "invalid post id");
 
-    const post = await getInstance().post.findFirst({
-      where: { id: parseInt(id) },
-    });
+    const post = await postService.findOne(parseInt(id));
     if (!post) throw notFoundError("Post not found.");
     throwIfNotSameAuthor(request.user.id, post!.authorId);
 
-    const deletedPost = await getInstance().post.delete({
-      where: { id: post!.id },
-    });
+    const deletedPost = await postService.remove(post.id);
     response.status(200).json(deletedPost);
   } catch (error) {
     next(error);

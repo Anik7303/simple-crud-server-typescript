@@ -1,45 +1,57 @@
-import type { Post } from "@prisma/client";
+import { Post, Prisma } from "@prisma/client";
 
 import {
   CreatePostDto,
-  FindPostDto,
-  FindPostsDto,
-  RemovePostDto,
+  PostOrderBy,
   UpdatablePostInfo,
-  UpdatePostDto,
 } from "../interfaces/post";
 import { getInstance } from "../lib/db";
 
-export const findOne = async (query: FindPostDto): Promise<Post | null> =>
-  getInstance().post.findFirst({ where: query });
+export const count = async () => getInstance().post.count();
+
+export const findOne = async (id: number): Promise<Post | null> =>
+  getInstance().post.findFirst({
+    where: { id },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
 
 export const find = async (
-  query: FindPostsDto,
+  query: Prisma.PostWhereInput,
   limit: number = 30,
-  skip?: number
+  skip: number = 0,
+  orderBy: PostOrderBy = [{ createdAt: "desc" }, { title: "desc" }]
 ): Promise<Post[]> =>
   getInstance().post.findMany({
     where: query,
-    orderBy: [{ createdAt: "desc", title: "desc" }],
     take: limit,
     skip,
+    orderBy: orderBy,
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 
 export const create = async (data: CreatePostDto): Promise<Post> =>
-  getInstance().post.create({
-    data,
-  });
+  getInstance().post.create({ data });
 
 export const update = async (
-  query: UpdatePostDto,
+  id: number,
   data: UpdatablePostInfo
-): Promise<Post> =>
-  getInstance().post.update({
-    data,
-    where: query,
-  });
+): Promise<Post> => getInstance().post.update({ data, where: { id } });
 
-export const remove = async (query: RemovePostDto): Promise<Post> =>
-  getInstance().post.delete({
-    where: query,
-  });
+export const remove = async (id: number): Promise<Post> =>
+  getInstance().post.delete({ where: { id } });
