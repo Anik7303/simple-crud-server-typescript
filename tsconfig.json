@@ -13,8 +13,8 @@
     "module": "CommonJS",
     "rootDir": "./src",
     "moduleResolution": "Node10",
-    "baseUrl": "./src",
-    "paths": {},
+    // "baseUrl": "./src",
+    // "paths": {},
     // "types": [],                                      /* Specify type package names to be included without being referenced in a source file. */
 
     /* JavaScript Support */

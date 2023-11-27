@@ -1,16 +1,14 @@
 {
-  "name": "app",
+  "name": "simple-crud-server",
   "version": "0.0.1",
-  "description": "Simple node.js app",
+  "description": "Simple node.js CRUD server with Typescript and Prisma",
   "private": true,
   "main": "build/index.js",
   "scripts": {
     "prebuild": "rimraf build",
     "build": "tsc --build",
     "start": "node build/index.js",
-    "dev": "nodemon src/index.ts",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "dev": "nodemon src/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.6.0",
@@ -31,19 +29,17 @@
     "prisma": "^5.6.0",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.2"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/Anik7303/testing-app.git"
+    "url": "git+ssh://git@github.com/Anik7303/simple-crud-server-typescript.git"
   },
   "keywords": [
     "Node.js",
     "Typescript",
-    "API",
-    "Testing",
-    "Jest"
+    "CRUD",
+    "Prisma"
   ],
   "author": {
     "name": "Anik Mohammad",
@@ -52,7 +48,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Anik7303/testing-app/issues"
+    "url": "https://github.com/Anik7303/simple-crud-server-typescript/issues"
   },
-  "homepage": "https://github.com/Anik7303/testing-app#readme"
+  "homepage": "https://github.com/Anik7303/simple-crud-server-typescript#readme"
 }
