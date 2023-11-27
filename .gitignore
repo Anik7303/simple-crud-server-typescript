@@ -1,8 +1,8 @@
 # packages
-node_modules/*
+/node_modules
 
 # production files
-build/*
+/build
 
 # environment variables
 .env*
@@ -10,3 +10,6 @@ build/*
 
 # log files
 *log*
+
+# test
+/coverage
