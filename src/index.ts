@@ -9,9 +9,14 @@ const PORT = process.env.PORT || "8000";
 const server = createServer(app);
 
 async function main() {
-  await server.listen(parseInt(PORT));
-  await getInstance().$connect();
-  console.log(`Server started at port ${PORT}`);
+  try {
+    await server.listen(parseInt(PORT));
+    await getInstance().$connect();
+    console.log(`Server started at port ${PORT}`);
+  } catch (error) {
+    if (error instanceof Error) console.error(error.message);
+    else console.log(error);
+  }
 }
 
 main();

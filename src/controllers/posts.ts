@@ -41,6 +41,7 @@ export async function fetchOne(
     throwIfNaN(id, "invalid post id");
 
     const post = await postService.findOne(parseInt(id));
+    if (!post) throw notFoundError("post not found.");
     response.status(200).json(post);
   } catch (error) {
     next(error);

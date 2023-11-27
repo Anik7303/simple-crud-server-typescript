@@ -32,7 +32,7 @@ Content-Type: {{json}}
 GET {{base}}/posts
 
 ### fetch one post
-@postId=5
+@postId=9
 GET {{base}}/posts/{{postId}}
 
 ### create a new post
